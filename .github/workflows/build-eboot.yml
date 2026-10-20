@@ -1,0 +1,31 @@
+name: Build EBOOT (PSP)
+
+on:
+  workflow_dispatch:
+    inputs:
+      make_args:
+        description: "Argumen tambahan make"
+        required: false
+        default: ""
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/pspdev/pspdev:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cek Plus di Makefile
+        run: |
+          grep -n -i "plus" psp/Makefile || echo "tidak ada"
+
+      - name: Build EBOOT
+        working-directory: psp
+        run: make -j$(nproc) ${{ github.event.inputs.make_args }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EBOOT
+          path: psp/EBOOT.PBP
+          if-no-files-found: error
